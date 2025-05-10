@@ -5,11 +5,9 @@ from http import HTTPStatus
 import math
 
 from consts import *
+from tickets_manager import save_ticket, get_active_ticket, mark_ticket_inactive
 
 app = Flask(__name__)
-
-# In-memory store (for now)
-tickets = {}  # ticket_id: {plate, parking_lot, entry_time}
 
 
 @app.route('/entry', methods=['POST'])
@@ -21,11 +19,9 @@ def entry():
         return jsonify({'error': 'Missing plate or parkingLot'}), HTTPStatus.BAD_REQUEST
 
     ticket_id = str(uuid.uuid4())
-    tickets[ticket_id] = {
-        'plate': plate,
-        'parking_lot': parking_lot,
-        'entry_time': datetime.datetime.now(datetime.UTC)
-    }
+    entry_time = datetime.datetime.now(datetime.UTC)
+
+    save_ticket(ticket_id, plate, parking_lot, entry_time)
 
     return jsonify({'ticketId': ticket_id}), HTTPStatus.OK
 
@@ -37,20 +33,24 @@ def exit():
     if not ticket_id:
         return jsonify({'error': 'Missing ticketId'}), HTTPStatus.BAD_REQUEST
 
-    if ticket_id not in tickets:
-        return jsonify({'error': 'Invalid ticketId'}), HTTPStatus.NOT_FOUND
+    record = get_active_ticket(ticket_id)
 
-    record = tickets.pop(ticket_id)
+    if not record:
+        return jsonify({'error': 'Invalid or already used ticketId'}), HTTPStatus.NOT_FOUND
+
+    entry_time = datetime.datetime.fromisoformat(record['entry_time'])
     now = datetime.datetime.now(datetime.UTC)
-    duration = now - record['entry_time']
+    duration = now - entry_time
     total_minutes = duration.total_seconds() // 60
     units = math.ceil(total_minutes / MINUTES_PER_UNIT)
     charge = units * RATE_PER_UNIT
 
+    mark_ticket_inactive(ticket_id)
+
     return jsonify({
         'plate': record['plate'],
         'parkingLot': record['parking_lot'],
-        'totalTimeMinutes': total_minutes,
+        'totalTimeMinutes': int(total_minutes),
         'charge': round(charge, 2)
     }), HTTPStatus.OK
 
