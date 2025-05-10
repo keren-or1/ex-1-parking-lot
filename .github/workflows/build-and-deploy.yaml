@@ -1,4 +1,4 @@
-name: Deploy to GCP with Terraform + Docker
+name: Build & Deploy to Cloud Run
 
 on:
   push:
@@ -13,37 +13,8 @@ env:
   GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
 
 jobs:
-  artifact-registry-setup:
-    name: Setup Artifact Registry
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-
-    - name: Set up Terraform
-      uses: hashicorp/setup-terraform@v2
-      with:
-        terraform_version: 1.6.6
-
-    - name: Authenticate with Google Cloud
-      run: |
-        echo "${GOOGLE_CREDENTIALS}" > $HOME/gcp-key.json
-        gcloud auth activate-service-account --key-file=$HOME/gcp-key.json
-        gcloud config set project ${TF_VAR_project_id}
-
-    - name: Terraform Init
-      run: terraform init
-      working-directory: terraform
-
-    - name: Create Artifact Registry Only
-      run: terraform apply -auto-approve -target=google_artifact_registry_repository.repo
-      working-directory: terraform
-
   build-and-deploy:
-    name: Build Image and Deploy All
     runs-on: ubuntu-latest
-    needs: artifact-registry-setup
 
     steps:
     - name: Checkout repository
@@ -65,8 +36,6 @@ jobs:
 
     - name: Set up Terraform
       uses: hashicorp/setup-terraform@v2
-      with:
-        terraform_version: 1.6.6
 
     - name: Terraform Init
       run: terraform init
