@@ -3,12 +3,14 @@ provider "google" {
   region  = var.region
 }
 
+# Artifact Registry (for Docker images)
 resource "google_artifact_registry_repository" "repo" {
-  name     = "parking-repo"
-  format   = "DOCKER"
-  location = var.region
+  repository_id = "parking-repo"
+  format        = "DOCKER"
+  location      = var.region
 }
 
+# Cloud Run Service
 resource "google_cloud_run_service" "parking_api" {
   name     = "parking-api"
   location = var.region
@@ -24,14 +26,15 @@ resource "google_cloud_run_service" "parking_api" {
     }
   }
 
-  traffics {
+  traffic {
     percent         = 100
     latest_revision = true
   }
 }
 
+# Firestore (Native mode)
 resource "google_firestore_database" "default" {
-  name   = "(default)"
-  region = var.region
-  type   = "NATIVE"
+  name        = "(default)"
+  location_id = var.region
+  type        = "NATIVE"
 }
