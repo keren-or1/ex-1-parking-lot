@@ -36,5 +36,5 @@ resource "google_cloud_run_service" "parking_api" {
 resource "google_firestore_database" "default" {
   name        = "(default)"
   location_id = var.region
-  type        = "NATIVE"
+  type        = "FIRESTORE_NATIVE"
 }
