@@ -35,11 +35,11 @@ jobs:
 
     - name: Build Docker Image
       run: |
-        docker build -t $TF_VAR_image_url .
+        docker build -t {$TF_VAR_image_url} .
 
     - name: Push Docker Image
       run: |
-        docker push $TF_VAR_image_url
+        docker push {$TF_VAR_image_url}
 
     - name: Terraform Init
       run: terraform init
