@@ -3,28 +3,26 @@ name: Build & Deploy to Cloud Run
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
 
 env:
   TF_VAR_project_id: ${{ vars.GCP_PROJECT_ID }}
   TF_VAR_region: ${{ vars.REGION }}
-  TF_VAR_image_url: ${{ vars.IMAGE_URL }}
+  TF_VAR_docker_image: ${{ vars.IMAGE_URL }}
   GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
 
 jobs:
-  build-and-deploy:
+  deploy-app:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
+    - name: Checkout repo
       uses: actions/checkout@v3
 
-    - name: Authenticate with Google Cloud
+    - name: Authenticate with GCP
       run: |
         echo "${GOOGLE_CREDENTIALS}" > $HOME/gcp-key.json
         gcloud auth activate-service-account --key-file=$HOME/gcp-key.json
-        gcloud config set project ${TF_VAR_project_id}
+        gcloud config set project $TF_VAR_project_id
         gcloud auth configure-docker ${TF_VAR_region}-docker.pkg.dev
 
     - name: Build and Push Docker Image
@@ -32,28 +30,27 @@ jobs:
       with:
         context: .
         push: true
-        tags: ${{ env.TF_VAR_image_url }}
+        tags: ${{ env.TF_VAR_docker_image }}
 
     - name: Set up Terraform
       uses: hashicorp/setup-terraform@v2
 
     - name: Terraform Init
       run: terraform init
-      working-directory: terraform
+      working-directory: terraform/app
 
     - name: Terraform Format Check
       run: terraform fmt -check
-      working-directory: terraform
+      working-directory: terraform/app
 
     - name: Terraform Validate
       run: terraform validate
-      working-directory: terraform
+      working-directory: terraform/app
 
     - name: Terraform Plan
       run: terraform plan -out=tfplan
-      working-directory: terraform
+      working-directory: terraform/app
 
-    - name: Terraform Apply (main only)
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    - name: Terraform Apply
       run: terraform apply -auto-approve tfplan
-      working-directory: terraform
+      working-directory: terraform/app
