@@ -7,7 +7,7 @@ on:
 env:
   TF_VAR_project_id: ${{ vars.GCP_PROJECT_ID }}
   TF_VAR_region: ${{ vars.REGION }}
-  TF_VAR_docker_image: ${{ vars.IMAGE_URL }}
+  TF_VAR_image_url: ${{ vars.IMAGE_URL }}
   GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
 
 jobs:
