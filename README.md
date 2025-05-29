@@ -55,8 +55,8 @@ Split into two jobs:
 ```
 ├── .github/workflows/                # CI/CD workflows
 ├── terraform/variables.tf            # Shared Terraform variables
-├── terraform/infra/                  # Artifact Registry and Firestore
-├── terraform/app/                    # Cloud Run + IAM
+├── terraform/main-infra.tf           # Artifact Registry and Firestore
+├── terraform/main-app.tf             # Cloud Run + IAM
 ├── consts.py                         # Consts
 ├── Dockerfile                        # API container definition
 ├── parking_management_api.py         # Parking management API
