@@ -25,15 +25,10 @@ jobs:
     - name: Set up Terraform
       uses: hashicorp/setup-terraform@v2
 
-    - name: Use only infra module (rename main-infra.tf → main.tf)
-      run: |
-        cp terraform/main-infra.tf terraform/main.tf
-      working-directory: terraform/
-
     - name: Terraform Init
       run: terraform init
-      working-directory: terraform/
+      working-directory: terraform/infra
 
     - name: Terraform Apply
       run: terraform apply -auto-approve
-      working-directory: terraform/
+      working-directory: terraform/infra
