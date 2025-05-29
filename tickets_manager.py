@@ -2,6 +2,8 @@ from typing import Optional, Dict
 from datetime import datetime
 from google.cloud import firestore
 
+from consts import ACTIVE_STATUS, INACTIVE_STATUS
+
 db = firestore.Client()
 
 
@@ -19,7 +21,7 @@ def save_ticket(ticket_id: str, plate: str, parking_lot: str, entry_time: dateti
         'plate': plate,
         'parking_lot': parking_lot,
         'entry_time': entry_time.isoformat(),
-        'status': 'active'
+        'status': ACTIVE_STATUS
     })
 
 
@@ -39,7 +41,7 @@ def get_active_ticket(ticket_id: str) -> Optional[Dict[str, str]]:
     if not doc.exists:
         return None
     data = doc.to_dict()
-    if data.get('status') != 'active':
+    if data.get('status') != ACTIVE_STATUS:
         return None
     return data
 
@@ -52,5 +54,5 @@ def mark_ticket_inactive(ticket_id: str) -> None:
         ticket_id (str): The ID of the ticket to update.
     """
     db.collection('tickets').document(ticket_id).update({
-        'status': 'inactive'
+        'status': INACTIVE_STATUS
     })
